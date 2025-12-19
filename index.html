@@ -3,19 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Калькулятор баллов</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     font-family: Arial, sans-serif;
-    padding: 12px;
-    margin: 0;
     background: #ffffff;
+    margin: 0;
+    padding: 14px;
     color: #111;
 }
 
@@ -25,15 +22,14 @@ body {
 }
 
 h2 {
-    color: #c40000;
     text-align: center;
-    margin-bottom: 20px;
+    color: #b30000;
 }
 
 label {
-    font-size: 14px;
-    margin-top: 12px;
     display: block;
+    margin-top: 14px;
+    font-size: 14px;
 }
 
 input {
@@ -41,87 +37,133 @@ input {
     padding: 14px;
     margin-top: 6px;
     border-radius: 12px;
-    border: 1px solid #c40000;
+    border: 1px solid #b30000;
     font-size: 16px;
 }
 
 button {
     width: 100%;
     padding: 16px;
-    margin-top: 18px;
+    margin-top: 20px;
     border-radius: 14px;
     border: none;
-    background: #c40000;
+    background: #b30000;
     color: #fff;
     font-size: 17px;
     cursor: pointer;
 }
 
-#result {
+.card {
     margin-top: 20px;
-    padding: 14px;
-    border-radius: 12px;
-    background: #f9f9f9;
-    color: #c40000;
-    text-align: center;
-    font-size: 16px;
-    white-space: pre-line;
+    padding: 16px;
+    border-radius: 14px;
+    background: #f6f6f6;
+    font-size: 15px;
+    line-height: 1.6;
 }
 
-/* Дополнительно для очень маленьких экранов */
-@media (max-width: 360px) {
-    h2 {
-        font-size: 18px;
-    }
-    input, button {
-        font-size: 15px;
-        padding: 13px;
-    }
+.line {
+    margin-bottom: 8px;
+}
+
+.total {
+    color: #b30000;
+    font-weight: bold;
+}
+
+/* Instagram */
+.insta {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    font-size: 14px;
+    text-decoration: none;
+    color: #b30000;
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #b30000;
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <h2>Калькулятор баллов</h2>
 
-<label>РК1</label>
+<label>РК1 (30%)</label>
 <input type="number" id="rk1" placeholder="0–100">
 
-<label>РК2</label>
+<label>РК2 (30%)</label>
 <input type="number" id="rk2" placeholder="0–100">
 
-<label>Экзамен</label>
+<label>Экзамен (40%)</label>
 <input type="number" id="exam" placeholder="0–100">
 
 <button onclick="calc()">Посчитать</button>
 
-<div id="result"></div>
+<div id="result" class="card" style="display:none;"></div>
 
 </div>
+
+<a class="insta" href="https://instagram.com/klichbekovv" target="_blank">
+@klichbekovv
+</a>
 
 <script>
 function calc() {
     const rk1 = Number(document.getElementById('rk1').value) || 0;
     const rk2 = Number(document.getElementById('rk2').value) || 0;
-    const exam = Number(document.getElementById('exam').value) || 0;
+    const examInput = document.getElementById('exam').value;
 
-    const total = rk1 * 0.3 + rk2 * 0.3 + exam * 0.4;
+    const rkPart = rk1 * 0.3 + rk2 * 0.3;
+    let needExam = (70 - rkPart) / 0.4;
 
-    let text = `Итоговый балл: ${total.toFixed(2)}`;
-
-    const neededExam = (70 - (rk1 * 0.3 + rk2 * 0.3)) / 0.4;
-
-    if (neededExam <= 0) {
-        text += `\n70 уже обеспечены`;
-    } else if (neededExam > 100) {
-        text += `\nНабрать 70 невозможно`;
-    } else {
-        text += `\nДля 70 нужно на экзамене: ${neededExam.toFixed(2)}`;
+    // порог экзамена
+    if (needExam > 0 && needExam < 50) {
+        needExam = 50;
     }
 
-    document.getElementById('result').textContent = text;
+    const result = document.getElementById('result');
+    let html = '';
+
+    // экзамен не введён
+    if (examInput === '') {
+        if (needExam <= 0) {
+            html = `<div class="line">70 баллов уже есть. Стипендия будет.</div>`;
+        } else if (needExam > 100) {
+            html = `<div class="line">Стипендию получить невозможно.</div>`;
+        } else {
+            html = `<div class="line">Для стипендии на экзамене нужно:</div>
+                    <div class="line total">${needExam.toFixed(2)} баллов</div>`;
+        }
+    }
+    // экзамен введён
+    else {
+        const exam = Number(examInput) || 0;
+        const examPart = exam * 0.4;
+        const total = rkPart + examPart;
+
+        html = `
+            <div class="line">РК дают: ${rkPart.toFixed(2)} баллов</div>
+            <div class="line">Экзамен даёт: ${examPart.toFixed(2)} баллов</div>
+            <hr>
+            <div class="line total">Итоговый балл: ${total.toFixed(2)}</div>
+        `;
+
+        if (needExam <= 0) {
+            html += `<div class="line">70 баллов уже есть</div>`;
+        } else if (needExam > 100) {
+            html += `<div class="line">70 баллов набрать невозможно</div>`;
+        } else {
+            html += `<div class="line">Для 70 на экзамене нужно: ${needExam.toFixed(2)} баллов</div>`;
+        }
+    }
+
+    result.innerHTML = html;
+    result.style.display = 'block';
 }
 </script>
 
